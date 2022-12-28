@@ -3,6 +3,8 @@ import { Divider, List, ListItem, ListItemText, ListSubheader, ListItemIcon, Box
 import { Link } from 'react-router-dom';
 import useTheme from '@mui/material/styles/useTheme';
 import useStyles from './styles';
+import { useGetGenresQuery } from '../../services/TMDB';
+import genreIcons from '../../assets/genres';
 
 const redLogo = 'https://fontmeme.com/permalink/210930/8531c658a743debe1e1aa1a2fc82006e.png';
 
@@ -15,17 +17,10 @@ const categories = [
 
 ];
 
-const demoCategories = [
-  { label: 'Action', value: 'action' },
-  { label: 'Comedy', value: 'comedy' },
-  { label: 'Horor', value: 'horor' },
-  { label: 'Animation', value: 'animation' },
-
-];
-
 const Sidebar = () => {
   const theme = useTheme();
   const classes = useStyles();
+  const { data, isFetching } = useGetGenresQuery();
 
   return (
     <>
@@ -42,9 +37,9 @@ const Sidebar = () => {
         {categories.map(({ label, value }) => (
           <Link to="/" className={classes.links} key={value}>
             <ListItem onClick={() => {}} button>
-              {/* <ListItemIcon>
-                <img src={} alt="lol" className={classes.genreImages} height={30} />
-              </ListItemIcon> */}
+              <ListItemIcon>
+                <img src={genreIcons[label.toLowerCase()]} alt="lol" className={classes.genreImages} height={30} />
+              </ListItemIcon>
               <ListItemText primary={label} />
             </ListItem>
           </Link>
@@ -53,16 +48,22 @@ const Sidebar = () => {
       <Divider />
       <List>
         <ListSubheader>Genres</ListSubheader>
-        {demoCategories.map(({ label, value }) => (
-          <Link to="/" className={classes.links} key={value}>
-            <ListItem onClick={() => {}} button>
-              {/* <ListItemIcon>
-                <img src={} alt="lol" className={classes.genreImages} height={30} />
-              </ListItemIcon> */}
-              <ListItemText primary={label} />
-            </ListItem>
-          </Link>
-        ))}
+        {isFetching ? (
+          <Box display="flex" justifyContent="center">
+            <CircularProgress />
+          </Box>
+        )
+          : data?.genres?.map(({ name, id }) => (
+            <Link to="/" className={classes.links} key={id}>
+              <ListItem onClick={() => {}} button>
+                <ListItemIcon>
+                  <img src={genreIcons[name.toLowerCase()]} alt="lol" className={classes.genreImages} height={30} />
+                </ListItemIcon>
+                <ListItemText primary={name} />
+              </ListItem>
+            </Link>
+          ))}
+
       </List>
     </>
   );
