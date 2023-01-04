@@ -1,18 +1,41 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppBar, IconButton, Toolbar, Drawer, Button, Avatar, useMediaQuery } from '@mui/material';
 import { Menu, AccountCircle, Brightness4, Brightness7 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import useTheme from '@mui/material/styles/useTheme';
+import { useDispatch, useSelector } from 'react-redux';
 import useStyles from './styles';
-
-import { Sidebar } from '../index';
+import { fetchToken, movieApi, getSessionId } from '../../utils';
+import { Sidebar, Search } from '../index';
+import { setUser, userSelector } from '../../features/auth';
 
 const NavBar = () => {
+  const { isAuthenticated, user } = useSelector(userSelector);
   const [mobileOpen, setMobileOpen] = useState(false);
   const classes = useStyles();
+
   const isMobile = useMediaQuery('(max-width:600px)');
   const theme = useTheme();
-  const isAuthenticated = true;
+  // const isAuthenticated = false;
+  const token = localStorage.getItem('request_token');
+  const sessionIdFromLocal = localStorage.getItem('session_id');
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const logInUser = async () => {
+      if (token) {
+        if (sessionIdFromLocal) {
+          const { data: userData } = await movieApi.get(`/account?session_id=${sessionIdFromLocal}`);
+          dispatch(setUser(userData));
+        } else {
+          const sessionId = await getSessionId();
+          const { data: userData } = await movieApi.get(`/account?session_id=${sessionId}`);
+
+          dispatch(setUser(userData));
+        }
+      }
+    };
+    logInUser();
+  }, [token]);
   return (
     <>
       <AppBar position="fixed">
@@ -32,18 +55,18 @@ const NavBar = () => {
 
             {theme.palette.mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
           </IconButton>
-          {!isMobile && 'SideBar ehi a'}
+          {!isMobile && <Search />}
           <div>
-            {!isAuthenticated ? (<Button color="inherit" onClick={() => {}}>Login &nbsp; <AccountCircle /></Button>)
+            {!isAuthenticated ? (<Button color="inherit" onClick={fetchToken}>Login &nbsp; <AccountCircle /></Button>)
               : (
-                <Button color="inherit" onClick={() => {}} component={Link} to="/profile/:id" className={classes.LinkButton}>
+                <Button color="inherit" onClick={() => {}} component={Link} to={`/profile/${user.id}`} className={classes.LinkButton}>
                   {!isMobile && <>My Movies &nbsp;</>}
                   <Avatar style={{ width: 30, height: 30 }} alt="Profile" />
                 </Button>
               )}
 
           </div>
-          {isMobile && 'SideBar ehi a'}
+          {isMobile && <Search />}
 
         </Toolbar>
       </AppBar>
