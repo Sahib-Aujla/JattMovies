@@ -25,7 +25,7 @@ const Sidebar = () => {
   const { genreIdOrCategoryName } = useSelector((state) => state.currentGenreOrCategory);
   const { data, isFetching } = useGetGenresQuery();
   const dispatch = useDispatch();
-  console.log(genreIdOrCategoryName);
+
   return (
     <>
       <Link to="/" className={classes.imageLink}>
