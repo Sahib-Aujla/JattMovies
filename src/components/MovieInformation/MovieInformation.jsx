@@ -25,6 +25,7 @@ const MovieInformation = () => {
   const addToWatchlist = () => {
 
   };
+
   if (isFetching) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center">
@@ -38,6 +39,11 @@ const MovieInformation = () => {
         <Link to="/">Something went wrong- Go Back</Link>
       </Box>
     );
+  }
+  if (isRecommendationsFetching) {
+    <Box display="flex" justifyContent="center" alignItems="center">
+      <CircularProgress size="8rem" />
+    </Box>;
   }
   return (
     <Grid container className={classes.containerSpaceAround}>
@@ -139,7 +145,7 @@ const MovieInformation = () => {
             autoPlay
             className={classes.video}
             title="trailer"
-            src={`https://www.youtube.com/embed/${data.videos.results[0].key}`}
+            src={`https://www.youtube.com/embed/${data?.videos?.results[0]?.key}`}
             allow="autoplay"
 
           />

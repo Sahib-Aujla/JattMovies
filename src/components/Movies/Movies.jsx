@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { useGetMoviesQuery } from '../../services/TMDB';
 import MovieList from '../MovieList/MovieList';
 import { selectGenreOrCategory } from '../currentGenreOrCategory';
+import Pagination from '../Pagination/Pagination';
 
 const Movies = () => {
   const [page, setPage] = useState(1);
@@ -28,7 +29,10 @@ const Movies = () => {
   if (error) {
     return 'An error Occured....';
   }
-  return (<div><MovieList movies={data} /></div>
+  return (
+    <div><MovieList movies={data} />
+      <Pagination currentPage={page} setPage={setPage} totalPages={data?.total_pages} />
+    </div>
   );
 };
 
