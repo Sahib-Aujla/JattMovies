@@ -1,29 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Typography, Button, ButtonGroup, Grid, Box, CircularProgress, useMediaQuery, Rating } from '@mui/material';
 import { Movie as MovieIcon, Theaters, Language, PlusOne, Favorite, FavoriteBorderOutlined, Remove, ArrowBack, MovieFilter } from '@mui/icons-material';
 import { Link, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
-import { useGetMovieQuery, useGetRecommendationsQuery } from '../../services/TMDB';
+import { useGetMovieQuery, useGetRecommendationsQuery, useGetListQuery } from '../../services/TMDB';
 import useStyles from './styles';
 import genreIcons from '../../assets/genres';
 import { selectGenreOrCategory } from '../currentGenreOrCategory';
 import { MovieList } from '../index';
+import { userSelector } from '../../features/auth';
 
 const MovieInformation = () => {
+  const { user } = useSelector(userSelector);
   const { id } = useParams();
   const dispatch = useDispatch();
   const { data, isFetching, error } = useGetMovieQuery(id);
   const { data: recommendations, isFetching: isRecommendationsFetching } = useGetRecommendationsQuery({ list: '/recommendations', movie_id: id });
+  const { data: favoriteMovies } = useGetListQuery({ listName: 'favorite/movies', accountId: user.id, sessionId: localStorage.getItem('session_id'), page: 1 });
+  const { data: watchlistMovies } = useGetListQuery({ listName: 'watchlist/movies', accountId: user.id, sessionId: localStorage.getItem('session_id'), page: 1 });
+
   const classes = useStyles();
-  const isMovieFavorited = false;
-  const isMovieWatchlisted = false;
+  const [isMovieFavorited, setIsMovieFavorited] = useState(false);
+  const [isMovieWatchlisted, setIsMovieWatchlisted] = useState(false);
+
   const [open, setOpen] = useState(false);
-  const addToFavorites = () => {
+  useEffect(() => {
+    setIsMovieFavorited(!!favoriteMovies?.results?.find((movie) => movie?.id === data?.id));
+  }, [favoriteMovies, data]);
 
+  useEffect(() => {
+    setIsMovieWatchlisted(!!watchlistMovies?.results?.find((movie) => movie?.id === data?.id));
+  }, [watchlistMovies, data]);
+  const addToFavorites = async () => {
+    await axios.post(`https://api.themoviedb.org/3/account/${user.id}/favorite?api_key=${process.env.REACT_APP_TMDB_KEY}&session_id=${localStorage.getItem('session_id')}`, {
+      media_type: 'movie',
+      media_id: id,
+      favorite: !isMovieFavorited,
+    });
+    setIsMovieFavorited((prev) => !prev);
   };
-  const addToWatchlist = () => {
-
+  const addToWatchlist = async () => {
+    await axios.post(`https://api.themoviedb.org/3/account/${user.id}/watchlist?api_key=${process.env.REACT_APP_TMDB_KEY}&session_id=${localStorage.getItem('session_id')}`, {
+      media_type: 'movie',
+      media_id: id,
+      watchlist: !isMovieWatchlisted,
+    });
+    setIsMovieWatchlisted((prev) => !prev);
   };
 
   if (isFetching) {
@@ -116,8 +139,8 @@ const MovieInformation = () => {
             </Grid>
             <Grid item xs={12} sm={6} className={classes.buttonsContainer}>
               <ButtonGroup size="medium" variant="outlined">
-                <Button onClick={addToFavorites} href="#" endIcon={isMovieFavorited ? <FavoriteBorderOutlined /> : <Favorite />}>{isMovieFavorited ? 'Remove Favorite' : 'Favorite'}</Button>
-                <Button onClick={addToWatchlist} href="#" endIcon={isMovieWatchlisted ? <Remove /> : <PlusOne />}>Watchlist</Button>
+                <Button onClick={addToFavorites} endIcon={isMovieFavorited ? <FavoriteBorderOutlined /> : <Favorite />}>{isMovieFavorited ? 'Remove Favorite' : 'Favorite'}</Button>
+                <Button onClick={addToWatchlist} endIcon={isMovieWatchlisted ? <Remove /> : <PlusOne />}>Watchlist</Button>
                 <Button endIcon={<ArrowBack />} sx={{ borderColor: 'primary-main' }}>
                   <Typography sx={{ textDecoration: 'none' }} component={Link} to="/" color="inherit" variant="subtitle2">
                     Back

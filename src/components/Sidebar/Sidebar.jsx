@@ -19,13 +19,15 @@ const categories = [
 
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ setMobileOpen }) => {
   const theme = useTheme();
   const classes = useStyles();
   const { genreIdOrCategoryName } = useSelector((state) => state.currentGenreOrCategory);
   const { data, isFetching } = useGetGenresQuery();
   const dispatch = useDispatch();
-
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [genreIdOrCategoryName]);
   return (
     <>
       <Link to="/" className={classes.imageLink}>

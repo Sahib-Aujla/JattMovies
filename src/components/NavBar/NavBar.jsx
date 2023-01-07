@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { AppBar, IconButton, Toolbar, Drawer, Button, Avatar, useMediaQuery } from '@mui/material';
 import { Menu, AccountCircle, Brightness4, Brightness7 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
@@ -8,12 +8,13 @@ import useStyles from './styles';
 import { fetchToken, movieApi, getSessionId } from '../../utils';
 import { Sidebar, Search } from '../index';
 import { setUser, userSelector } from '../../features/auth';
+import { ColorModeContext } from '../../utils/ToggleColorMode';
 
 const NavBar = () => {
   const { isAuthenticated, user } = useSelector(userSelector);
   const [mobileOpen, setMobileOpen] = useState(false);
   const classes = useStyles();
-
+  const colorMode = useContext(ColorModeContext);
   const isMobile = useMediaQuery('(max-width:600px)');
   const theme = useTheme();
   // const isAuthenticated = false;
@@ -51,7 +52,7 @@ const NavBar = () => {
           </IconButton>
 
           )}
-          <IconButton color="inherit" sx={{ ml: 1 }} onClick={() => {}}>
+          <IconButton color="inherit" sx={{ ml: 1 }} onClick={colorMode.toggleColorMode}>
 
             {theme.palette.mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
           </IconButton>
@@ -61,7 +62,11 @@ const NavBar = () => {
               : (
                 <Button color="inherit" onClick={() => {}} component={Link} to={`/profile/${user.id}`} className={classes.LinkButton}>
                   {!isMobile && <>My Movies &nbsp;</>}
-                  <Avatar style={{ width: 30, height: 30 }} alt="Profile" />
+                  <Avatar
+                    style={{ width: 30, height: 30 }}
+                    alt="Profile"
+                    src={`https://www.themoviedb.org/t/p/w64_and_h64_face${user?.avatar?.tmdb?.avatar_path}`}
+                  />
                 </Button>
               )}
 
